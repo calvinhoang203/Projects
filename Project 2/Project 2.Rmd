@@ -1,0 +1,1197 @@
+---
+title: "Project 2"
+author: "Calvin Hoang"
+date: "2/22/2023"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+### Heart Disease Dataset
+
+```{r, echo = FALSE}
+heart_disease <- read.csv("C:/Users/hoang/Downloads/STA 106/heart_disease_health_indicators_BRFSS2015.csv", header = TRUE)
+```
+
+
+
+### Part 1: Exploring beyond One-way ANOVA with simulated data.
+
+### What if there exist huge imbalances among sample sizes {n1,n2,..,nK }? For instance, n1 = n2 = .. = n_k-1 = 100, but n_k = 10^6.
+
+
+
+- Creating 5 different samples with normal distribution so that we can compare the mean and the variances of each one of them:
+```{r, echo = FALSE}
+# generate normal random variable
+x=rnorm(1000000,2,4)
+print(c(mean(x),var(x)))
+y=rnorm(1000,1,3)
+print(c(mean(y),var(y))) 
+```
+- After running many tests, there seems to be a significant difference between the variances of each sample, but not the mean. For example, in one of the tests, the means of the variables x and y have small difference. However, the variance of sample x is significantly different from the variances of y. In addition, I see that n = 1000 and n = 10^6 sometimes have significant difference in the mean. I conclude that as the sample sizes change significantly, there is a significant change between the variances of each sample; however, the mean doesn't seem to change much. 
+
+
+- Suppose there are three levels and simulate the data such that μ_i=mean1[i], σ_i=sd1[i], n_i=samples[i]
+
+```{r, echo = FALSE}
+K=3
+# mean1=(mu1,mu2,mu3)
+mean1=c(1,1,1)
+# sd1=(sigma1,sigma2,sigma3)
+sd1=c(1,1,1)
+# samples=(n1,n2,n3)
+samples=c(10,10,10)
+
+# initialize mydata
+mydata=data.frame()
+
+for(i in 1:K){
+  Yi=rnorm(samples[i],mean=mean1[i],sd=sd1[i])
+  data_i=cbind(Yi,i)
+  mydata=rbind(mydata,data_i)
+}
+colnames(mydata)=c('y','level')
+# convert to factor variable
+mydata$level=as.factor(mydata$level)
+mydata
+```
+
+```{r, echo = FALSE}
+Yi=rnorm(samples[i],mean=mean1[i],sd=sd1[i])
+Yi
+```
+
+```{r, echo = FALSE}
+data_i=cbind(Yi,i)
+data_i
+```
+
+```{r, echo = FALSE}
+fit1=aov(y~level,data=mydata)
+anova(fit1)
+```
+
+
+```{r, echo = FALSE}
+result1=anova(fit1)
+result1$`Pr(>F)`[1]
+```
+- Extracting only the p-value, we get 0.6263854.
+
+
+- Now we want to repeat this process by, for example, 10000 times since one result of the experiment won't be enough.
+```{r, echo = FALSE}
+# B number of replicates
+B=10000
+# save all p-values in the vector pvalues1
+pvalues1=numeric(B)
+for(b in 1:B){
+  K=3
+  # mean1=(mu1,mu2,mu3)
+  mean1=c(1,1,1)
+  # sd1=(sigma1,sigma2,sigma3)
+  sd1=c(1,1,1)
+  # samples=(n1,n2,n3)
+  samples=c(10,10,10)
+
+  # initialize mydata
+  mydata=data.frame()
+
+  for(i in 1:K){
+    Yi=mean1[i]+rnorm(samples[i],mean=0,sd=sd1[i])
+    data_i=cbind(Yi,i)
+    mydata=rbind(mydata,data_i)
+  }
+  colnames(mydata)=c('y','level')
+  # convert to factor variable
+  mydata$level=as.factor(mydata$level)
+  # fit anova model
+  fit1=aov(y~level,data=mydata)
+
+  # extract p-value
+  result1=anova(fit1)
+  pvalues1[b]=result1$`Pr(>F)`[1]
+}
+```
+
+- Let's compare each times that we get the p-value with the significance level of 0.05. Then the ratio that we reject the null hypothesis:
+```{r, echo = FALSE}
+sum(pvalues1<0.05)/B
+```
+- Here we can see that the ratio is below the significant level of 0.05, which means that the F-test works under this setting. Therefore, the assumption is not violated and the results are accurate.
+
+
+- However, if we change the sample sizes, will the assumptions get violated? Let's find out!
+
+- Here we simulate the data such that μ_i=mean2[i], σ_i=sd2[i], n_i=samples[i] (the samples are different)
+
+```{r, echo = FALSE}
+K=3
+# mean2=(mu1,mu2,mu3)
+mean2=c(1,1,1)
+# sd2=(sigma1,sigma2,sigma3)
+sd2=c(1,1,1)
+# samples=(n1,n2,n3)
+samples=c(10,50,100)
+
+# initialize mydata
+mydata=data.frame()
+
+for(i in 1:K){
+  Yi=rnorm(samples[i],mean=mean2[i],sd=sd2[i])
+  data_i=cbind(Yi,i)
+  mydata=rbind(mydata,data_i)
+}
+colnames(mydata)=c('y','level')
+# convert to factor variable
+mydata$level=as.factor(mydata$level)
+mydata
+```
+
+```{r, echo = FALSE}
+Yi=rnorm(samples[i],mean=mean2[i],sd=sd2[i])
+Yi
+```
+
+```{r, echo = FALSE}
+data_i=cbind(Yi,i)
+data_i
+```
+
+```{r, echo = FALSE}
+fit2=aov(y~level,data=mydata)
+anova(fit2)
+```
+
+
+```{r, echo = FALSE}
+result2=anova(fit2)
+result2$`Pr(>F)`[1]
+```
+- Extracting only the p-value, we get 0.3365316.
+
+
+
+```{r, echo = FALSE}
+# B number of replicates
+B=10000
+# save all p-values in the vector pvalues2
+pvalues2=numeric(B)
+for(b in 1:B){
+  K=3
+  # mean2=(mu1,mu2,mu3)
+  mean2=c(1,1,1)
+  # sd2=(sigma1,sigma2,sigma3)
+  sd2=c(1,1,1)
+  # samples=(n1,n2,n3)
+  samples=c(10,50,100)
+
+  # initialize mydata
+  mydata=data.frame()
+
+  for(i in 1:K){
+    Yi=mean2[i]+rnorm(samples[i],mean=0,sd=sd2[i])
+    data_i=cbind(Yi,i)
+    mydata=rbind(mydata,data_i)
+  }
+  colnames(mydata)=c('y','level')
+  # convert to factor variable
+  mydata$level=as.factor(mydata$level)
+  # fit anova model
+  fit2=aov(y~level,data=mydata)
+
+  # extract p-value
+  result2=anova(fit2)
+  pvalues2[b]=result2$`Pr(>F)`[1]
+}
+```
+
+- The ratio that we reject the null hypothesis:
+```{r, echo = FALSE}
+sum(pvalues2<0.05)/B
+```
+- Here we can see that the ratio is roughly above the significant level of 0.05, which means that the F-test doesn't work under this setting. Therefore, the assumption is violated and the results are inaccurate.
+
+- Now, what if the means are different? We simulate the data such that μ_i=mean3[i], σ_i=sd3[i], n_i=samples[i] (means are different)
+
+```{r, echo = FALSE}
+K=3
+# mean3=(mu1,mu2,mu3)
+mean3=c(1,4,5)
+# sd3=(sigma1,sigma2,sigma3)
+sd3=c(1,1,1)
+# samples=(n1,n2,n3)
+samples=c(10,10,10)
+
+# initialize mydata
+mydata=data.frame()
+
+for(i in 1:K){
+  Yi=rnorm(samples[i],mean=mean3[i],sd=sd3[i])
+  data_i=cbind(Yi,i)
+  mydata=rbind(mydata,data_i)
+}
+colnames(mydata)=c('y','level')
+# convert to factor variable
+mydata$level=as.factor(mydata$level)
+mydata
+```
+
+```{r, echo = FALSE}
+Yi=rnorm(samples[i],mean=mean3[i],sd=sd3[i])
+Yi
+```
+
+```{r, echo = FALSE}
+data_i=cbind(Yi,i)
+data_i
+```
+
+```{r, echo = FALSE}
+fit3=aov(y~level,data=mydata)
+anova(fit3)
+```
+
+
+```{r, echo = FALSE}
+result3=anova(fit3)
+result3$`Pr(>F)`[1]
+```
+- Extracting only the p-value, we get 5.791424e-08.
+
+
+
+```{r, echo = FALSE}
+# B number of replicates
+B=10000
+# save all p-values in the vector pvalues2
+pvalues3=numeric(B)
+for(b in 1:B){
+  K=3
+  # mean3=(mu1,mu2,mu3)
+  mean3=c(1,4,5)
+  # sd3=(sigma1,sigma2,sigma3)
+  sd3=c(1,1,1)
+  # samples=(n1,n2,n3)
+  samples=c(100,1000,10000)
+
+  # initialize mydata
+  mydata=data.frame()
+
+  for(i in 1:K){
+    Yi=mean3[i]+rnorm(samples[i],mean=0,sd=sd3[i])
+    data_i=cbind(Yi,i)
+    mydata=rbind(mydata,data_i)
+  }
+  colnames(mydata)=c('y','level')
+  # convert to factor variable
+  mydata$level=as.factor(mydata$level)
+  # fit anova model
+  fit3=aov(y~level,data=mydata)
+
+  # extract p-value
+  result3=anova(fit3)
+  pvalues3[b]=result3$`Pr(>F)`[1]
+}
+```
+
+- The ratio that we reject the null hypothesis:
+```{r, echo = FALSE}
+sum(pvalues3<0.05)/B
+```
+
+
+
+
+### What if the equal variance assumption is violated? That is, members of {(σ_1)^2 ,(σ_2)^2 ,..,(σ_k)^2 } are not all equal.
+- In order to find the unequal sample sizes, we need to find the unequal variances between the samples which we will use t-test.
+- By using t-test we are able to determine whether the samples have equal variances or not. One of the assumptions made in a t-test is when the two samples do not have equal variances, it is a real issue to identify the significant differences of the samples.
+```{r, echo = FALSE}
+t.test(x, y, var.equal = TRUE)
+t_test_1 = boxplot(x,y, names=c("x","y"))
+t_test_1
+t.test(x, y, var.equal = FALSE)
+```
+
+- Based on the boxplot, we can see that the variances of samples x and y are nearly the same, but the p-values are significantly different. Now we compare the p-value with the significant level of 0.05. We will also use the t-test and the Welch's t-test to further prove our statements. Since the p-value of the t-test (when the variances of two samples are the same) is less than the significant level of 0.05, we reject the null hypothesis, which means that the variance of x is equal to the variance of y. However, the p-value of the Welch's t-test is greater than the significant level of 0.05, we fail to reject the null hypothesis, which means that the variance of x is not equal to the variance of y. Thus, we conclude that only the Welch's t-test is able to detect the significant difference because the two variances are unequal. The t-test might give out inaccurate information.
+
+
+
+- Next, we simulate the data such that μ_i=mean3[i], σ_i=sd3[i], n_i=samples[i] (the variances are not all equal)
+
+```{r, echo = FALSE}
+K=3
+# mean4=(mu1,mu2,mu3)
+mean4=c(1,1,1)
+# sd4=(sigma1,sigma2,sigma3)
+sd4=c(1,2,3)
+# samples=(n1,n2,n3)
+samples=c(10,10,10)
+
+# initialize mydata
+mydata=data.frame()
+
+for(i in 1:K){
+  Yi=rnorm(samples[i],mean=mean4[i],sd=sd4[i])
+  data_i=cbind(Yi,i)
+  mydata=rbind(mydata,data_i)
+}
+colnames(mydata)=c('y','level')
+# convert to factor variable
+mydata$level=as.factor(mydata$level)
+mydata
+```
+```{r, echo = FALSE}
+Yi=rnorm(samples[i],mean=mean4[i],sd=sd4[i])
+Yi
+```
+
+```{r, echo = FALSE}
+data_i=cbind(Yi,i)
+data_i
+```
+
+```{r, echo = FALSE}
+fit4=aov(y~level,data=mydata)
+anova(fit4)
+```
+
+
+```{r, echo = FALSE}
+result4=anova(fit4)
+result4$`Pr(>F)`[1]
+```
+- Extracting only the p-value, we get 0.6931681.
+
+
+```{r, echo = FALSE}
+# B number of replicates
+B=10000
+# save all p-values in the vector pvalues3
+pvalues4=numeric(B)
+for(b in 1:B){
+  K=3
+  # mean4=(mu1,mu2,mu3)
+  mean4=c(1,1,1)
+  # sd4=(sigma1,sigma2,sigma3)
+  sd4=c(1,2,3)
+  # samples=(n1,n2,n3)
+  samples=c(10,10,10)
+
+  # initialize mydata
+  mydata=data.frame()
+
+  for(i in 1:K){
+    Yi=mean4[i]+rnorm(samples[i],mean=0,sd=sd4[i])
+    data_i=cbind(Yi,i)
+    mydata=rbind(mydata,data_i)
+  }
+  colnames(mydata)=c('y','level')
+  # convert to factor variable
+  mydata$level=as.factor(mydata$level)
+  # fit anova model
+  fit4=aov(y~level,data=mydata)
+
+  # extract p-value
+  result4=anova(fit4)
+  pvalues4[b]=result4$`Pr(>F)`[1]
+}
+```
+
+- After repeating the process 10000 times, the ratio that we reject the null hypothesis:
+```{r, echo = FALSE}
+sum(pvalues4<0.05)/B
+```
+- Since the ratio is roughly above the significance level of 0.05, the F-test doesn't work under this setting. Therefore, the assumption is violated. It also means the results of the tests are unaccurate.
+
+
+### What if the Normality assumption is violated?
+```{r, echo = FALSE}
+x_1 = rt(5000, 1)
+x_2 = rt(1000, 100)
+```
+
+- If the histogram for a data set is roughly bell-shaped, then it’s likely that the data is normally distributed.
+
+```{r, echo = FALSE}
+hist(x_1)
+```
+
+```{r, echo = FALSE}
+hist(x_2)
+```
+
+
+```{r, echo = FALSE}
+shapiro.test(x_1)
+shapiro.test(x_2)
+```
+
+- Based on the histogram of each samples, we can see that sample x_2 is roughly bell-shaped, which mean that it is normally distributed and it doesn't violate the Normality assumption. However, in sample x_1, the histogram is not bell-shaped, which means that it is not normally distributed and it violates the Normality assumption.
+- Based on the shapiro test, we can see that the p-value of x_1 is less than the significance level of 0.05 which means that the data is not normal and it violates the Normality assumption, but the p-value of x_2 is greater than 0.05 meaning that the data is normal and the Normality assumption is not violated.
+### What if you want to discover the community structures among the K samples?
+
+```{r, echo = FALSE}
+x_1=rnorm(100,0,1)
+print(c(mean(x_1),var(x_1)))
+x_2=rnorm(100,0,1)
+print(c(mean(x_2),var(x_2))) 
+x_3=rnorm(100,0,1)
+print(c(mean(x_3),var(x_3)))
+x_4=rnorm(100,4,1)
+print(c(mean(x_4),var(x_4)))
+
+samples = data.frame(x_1,x_2,x_3,x_4)
+
+clusters <- hclust(dist(samples))
+plot(clusters,xlab='',main='Dendrogram')
+
+# cut off the tree at the desired number of clusters using cutree.
+clusterCut <- cutree(clusters, 1)
+# plot the tree
+rect.hclust(clusters, k=2)
+```
+
+- Based on the dendrogram tree, we can see that the community structures among samples x_1, x_2, x_3 are in the same category (the same cluster) as the means and variances of the samples are nearly the same. However, when we change the mean of the sample x_4, the tree indicates that its community structure is separated into its own cluster Which datas are also in a different box.
+
+### Part 2: Exploring beyond One-way ANOVA with Kaggle data.
+
+```{r, echo = FALSE}
+# combine several binary HeartDiseaseorAttack, HighBP, HighChol, Stroke, Smoker
+# into one categorical variable
+BMI <- data.frame(BMI = heart_disease$BMI)
+HeartDiseaseorAttack <- data.frame(HeartDiseaseorAttack = heart_disease$HeartDiseaseorAttack)
+HighBP <- data.frame(HighBP = heart_disease$HighBP)
+HighChol <- data.frame(HighChol = heart_disease$HighChol)
+Stroke <- data.frame(Stroke = heart_disease$Stroke)
+Smoker <- data.frame(Smoker = heart_disease$Smoker)
+HD = cbind(BMI, HeartDiseaseorAttack, HighBP, HighChol, Stroke, Smoker)
+
+# as.factor(): covert to factor variable
+HD$HeartDiseaseorAttack=as.factor(HD$HeartDiseaseorAttack)
+HD$HighBP=as.factor(HD$HighBP)
+HD$HighChol=as.factor(HD$HighChol)
+HD$Stroke=as.factor(HD$Stroke)
+HD$Smoker=as.factor(HD$Smoker)
+
+# Combine specified categorical variables by
+# concatenating their values into one character
+# function combineCatVars(.data,vars,sep = ".")
+# .data: a dataframe with the columns to be combined
+#  vars: a character vector of the categorical variables to be combined
+#  sep: the separator to combine the values of the variables in var
+library(iNZightTools)
+HD = combineCatVars(HD, vars = c('HeartDiseaseorAttack', 'HighBP', 'HighChol', 'Stroke', 'Smoker'), sep = "_")
+colnames(HD)[7]  <- "Combined"
+HD
+# check the last column of the data combined
+```
+
+
+
+```{r, echo = FALSE}
+New_HD = data.frame(xtabs(~BMI + Combined ,data= HD))
+New_HD
+```
+
+
+
+- Creating multiple datas such that BMI is in respect to different variables of the Combined.
+```{r, echo = FALSE}
+
+BMI_0_0_0_0_0 = data.frame(HD[HD$Combined == '0_0_0_0_0',])
+
+
+BMI_mean1 = mean(BMI_0_0_0_0_0$BMI)
+BMI_variances1 = var(BMI_0_0_0_0_0$BMI)
+BMI_mean1
+BMI_variances1
+
+
+hist(BMI_0_0_0_0_0$BMI)
+```
+
+
+```{r, echo = FALSE}
+
+BMI_0_1_0_0_0 = data.frame(HD[HD$Combined == '0_1_0_0_0',])
+
+BMI_0_1_0_0_0 
+
+
+BMI_mean2 = mean(BMI_0_1_0_0_0$BMI)
+BMI_variances2 = var(BMI_0_1_0_0_0$BMI)
+BMI_mean2
+BMI_variances2
+
+
+hist(BMI_0_1_0_0_0$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_0_0_1_0_0 = data.frame(HD[HD$Combined == '0_0_1_0_0',])
+
+BMI_0_0_1_0_0 
+
+
+BMI_mean3 = mean(BMI_0_0_1_0_0$BMI)
+BMI_variances3 = var(BMI_0_0_1_0_0$BMI)
+BMI_mean3
+BMI_variances3
+
+
+hist(BMI_0_0_1_0_0$BMI)
+```
+
+
+```{r, echo = FALSE}
+
+BMI_0_0_0_1_0 = data.frame(HD[HD$Combined == '0_0_0_1_0',])
+
+BMI_0_0_0_1_0 
+
+
+BMI_mean4 = mean(BMI_0_0_0_1_0$BMI)
+BMI_variances4 = var(BMI_0_0_0_1_0$BMI)
+BMI_mean4
+BMI_variances4
+
+
+hist(BMI_0_0_0_1_0$BMI)
+```
+
+
+```{r, echo = FALSE}
+
+BMI_0_0_0_0_1 = data.frame(HD[HD$Combined == '0_0_0_0_1',])
+
+BMI_0_0_0_0_1
+
+
+BMI_mean5 = mean(BMI_0_0_0_0_1$BMI)
+BMI_variances5 = var(BMI_0_0_0_0_1$BMI)
+BMI_mean5
+BMI_variances5
+
+
+hist(BMI_0_0_0_0_1$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_1_0_0_0_0 = data.frame(HD[HD$Combined == '1_0_0_0_0',])
+
+BMI_1_0_0_0_0
+
+
+BMI_mean6 = mean(BMI_1_0_0_0_0$BMI)
+BMI_variances6 = var(BMI_1_0_0_0_0$BMI)
+BMI_mean6
+BMI_variances6
+
+
+hist(BMI_1_0_0_0_0$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_1_1_0_0_0 = data.frame(HD[HD$Combined == '1_1_0_0_0',])
+
+BMI_1_1_0_0_0
+
+
+BMI_mean7 = mean(BMI_1_1_0_0_0$BMI)
+BMI_variances7 = var(BMI_1_1_0_0_0$BMI)
+BMI_mean7
+BMI_variances7
+
+
+hist(BMI_1_1_0_0_0$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_1_0_1_0_0 = data.frame(HD[HD$Combined == '1_0_1_0_0',])
+
+BMI_1_0_1_0_0
+
+
+BMI_mean8 = mean(BMI_1_0_1_0_0$BMI)
+BMI_variances8 = var(BMI_1_0_1_0_0$BMI)
+BMI_mean8
+BMI_variances8
+
+
+hist(BMI_1_0_1_0_0$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_1_0_0_1_0 = data.frame(HD[HD$Combined == '1_0_0_1_0',])
+
+BMI_1_0_0_1_0
+
+
+BMI_mean9 = mean(BMI_1_0_0_1_0$BMI)
+BMI_variances9 = var(BMI_1_0_0_1_0$BMI)
+BMI_mean9
+BMI_variances9
+
+
+hist(BMI_1_0_0_1_0$BMI)
+```
+```{r, echo = FALSE}
+
+BMI_1_0_0_0_1 = data.frame(HD[HD$Combined == '1_0_0_0_1',])
+
+BMI_1_0_0_0_1
+
+
+BMI_mean10 = mean(BMI_1_0_0_0_1$BMI)
+BMI_variances10 = var(BMI_1_0_0_0_1$BMI)
+BMI_mean10
+BMI_variances10
+
+
+hist(BMI_1_0_0_0_1$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_1_1_1_0_0 = data.frame(HD[HD$Combined == '1_1_1_0_0',])
+
+BMI_1_1_1_0_0
+
+
+BMI_mean11 = mean(BMI_1_1_1_0_0$BMI)
+BMI_variances11 = var(BMI_1_1_1_0_0$BMI)
+BMI_mean11
+BMI_variances11
+
+
+hist(BMI_1_1_1_0_0$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_1_1_0_1_0 = data.frame(HD[HD$Combined == '1_1_0_1_0',])
+
+BMI_1_1_0_1_0
+
+
+BMI_mean12 = mean(BMI_1_1_0_1_0$BMI)
+BMI_variances12 = var(BMI_1_1_0_1_0$BMI)
+BMI_mean12
+BMI_variances12
+
+
+hist(BMI_1_1_0_1_0$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_1_1_0_0_1 = data.frame(HD[HD$Combined == '1_1_0_0_1',])
+
+BMI_1_1_0_0_1
+
+
+BMI_mean13 = mean(BMI_1_1_0_0_1$BMI)
+BMI_variances13 = var(BMI_1_1_0_0_1$BMI)
+BMI_mean13
+BMI_variances13
+
+
+hist(BMI_1_1_0_0_1$BMI)
+```
+
+
+```{r, echo = FALSE}
+
+BMI_1_1_1_1_0 = data.frame(HD[HD$Combined == '1_1_1_1_0',])
+
+BMI_1_1_1_1_0
+
+
+BMI_mean14 = mean(BMI_1_1_1_1_0$BMI)
+BMI_variances14 = var(BMI_1_1_1_1_0$BMI)
+BMI_mean14
+BMI_variances14
+
+
+hist(BMI_1_1_1_1_0$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_1_1_1_0_1 = data.frame(HD[HD$Combined == '1_1_1_0_1',])
+
+BMI_1_1_1_0_1
+
+
+BMI_mean15 = mean(BMI_1_1_1_0_1$BMI)
+BMI_variances15 = var(BMI_1_1_1_0_1$BMI)
+BMI_mean15
+BMI_variances15
+
+
+hist(BMI_1_1_1_0_1$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_1_1_1_1_1 = data.frame(HD[HD$Combined == '1_1_1_1_1',])
+
+BMI_1_1_1_1_1
+
+
+BMI_mean16 = mean(BMI_1_1_1_1_1$BMI)
+BMI_variances16 = var(BMI_1_1_1_1_1$BMI)
+BMI_mean16
+BMI_variances16
+
+
+hist(BMI_1_1_1_1_1$BMI)
+```
+
+
+```{r, echo = FALSE}
+
+BMI_0_0_0_1_1 = data.frame(HD[HD$Combined == '0_0_0_1_1',])
+
+BMI_0_0_0_1_1
+
+
+BMI_mean17 = mean(BMI_0_0_0_1_1$BMI)
+BMI_variances17 = var(BMI_0_0_0_1_1$BMI)
+BMI_mean17
+BMI_variances17
+
+
+hist(BMI_0_0_0_1_1$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_0_0_1_0_1 = data.frame(HD[HD$Combined == '0_0_1_0_1',])
+
+BMI_0_0_1_0_1
+
+
+BMI_mean18 = mean(BMI_0_0_1_0_1$BMI)
+BMI_variances18 = var(BMI_0_0_1_0_1$BMI)
+BMI_mean18
+BMI_variances18
+
+
+hist(BMI_0_0_1_0_1$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_0_1_0_0_1 = data.frame(HD[HD$Combined == '0_1_0_0_1',])
+
+BMI_0_1_0_0_1
+
+
+BMI_mean19 = mean(BMI_0_1_0_0_1$BMI)
+BMI_variances19 = var(BMI_0_1_0_0_1$BMI)
+BMI_mean19
+BMI_variances19
+
+
+hist(BMI_0_1_0_0_1$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_0_0_1_1_1 = data.frame(HD[HD$Combined == '0_0_1_1_1',])
+
+BMI_0_0_1_1_1
+
+
+BMI_mean20 = mean(BMI_0_0_1_1_1$BMI)
+BMI_variances20 = var(BMI_0_0_1_1_1$BMI)
+BMI_mean20
+BMI_variances20
+
+
+hist(BMI_0_0_1_1_1$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_0_1_0_1_1 = data.frame(HD[HD$Combined == '0_1_0_1_1',])
+
+BMI_0_1_0_1_1
+
+
+BMI_mean21 = mean(BMI_0_1_0_1_1$BMI)
+BMI_variances21 = var(BMI_0_1_0_1_1$BMI)
+BMI_mean21
+BMI_variances21
+
+
+hist(BMI_0_1_0_1_1$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_1_0_0_1_1 = data.frame(HD[HD$Combined == '1_0_0_1_1',])
+
+BMI_1_0_0_1_1
+
+
+BMI_mean22 = mean(BMI_1_0_0_1_1$BMI)
+BMI_variances22 = var(BMI_1_0_0_1_1$BMI)
+BMI_mean22
+BMI_variances22
+
+
+hist(BMI_1_0_0_1_1$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_0_1_1_1_1 = data.frame(HD[HD$Combined == '0_1_1_1_1',])
+
+BMI_0_1_1_1_1
+
+
+BMI_mean23 = mean(BMI_0_1_1_1_1$BMI)
+BMI_variances23 = var(BMI_0_1_1_1_1$BMI)
+BMI_mean23
+BMI_variances23
+
+
+hist(BMI_0_1_1_1_1$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_1_0_1_1_1 = data.frame(HD[HD$Combined == '1_0_1_1_1',])
+
+BMI_1_0_1_1_1
+
+
+BMI_mean24 = mean(BMI_1_0_1_1_1$BMI)
+BMI_variances24 = var(BMI_1_0_1_1_1$BMI)
+BMI_mean24
+BMI_variances24
+
+
+hist(BMI_1_0_1_1_1$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_0_1_1_1_0 = data.frame(HD[HD$Combined == '0_1_1_1_0',])
+
+BMI_0_1_1_1_0
+
+
+BMI_mean25 = mean(BMI_0_1_1_1_0$BMI)
+BMI_variances25 = var(BMI_0_1_1_1_0$BMI)
+BMI_mean25
+BMI_variances25
+
+
+hist(BMI_0_1_1_1_0$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_1_0_1_1_0 = data.frame(HD[HD$Combined == '1_0_1_1_0',])
+
+BMI_1_0_1_1_0
+
+
+BMI_mean26 = mean(BMI_1_0_1_1_0$BMI)
+BMI_variances26 = var(BMI_1_0_1_1_0$BMI)
+BMI_mean26
+BMI_variances26
+
+
+hist(BMI_1_0_1_1_0$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_1_0_1_0_1 = data.frame(HD[HD$Combined == '1_0_1_0_1',])
+
+BMI_1_0_1_0_1
+
+
+BMI_mean27 = mean(BMI_1_0_1_0_1$BMI)
+BMI_variances27 = var(BMI_1_0_1_0_1$BMI)
+BMI_mean27
+BMI_variances27
+
+
+hist(BMI_1_0_1_0_1$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_0_0_1_1_0 = data.frame(HD[HD$Combined == '0_0_1_1_0',])
+
+BMI_0_0_1_1_0
+
+
+BMI_mean28 = mean(BMI_0_0_1_1_0$BMI)
+BMI_variances28 = var(BMI_0_0_1_1_0$BMI)
+BMI_mean28
+BMI_variances28
+
+
+hist(BMI_0_0_1_1_0$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_0_1_1_0_0 = data.frame(HD[HD$Combined == '0_1_1_0_0',])
+
+BMI_0_1_1_0_0
+
+
+BMI_mean29 = mean(BMI_0_1_1_0_0$BMI)
+BMI_variances29 = var(BMI_0_1_1_0_0$BMI)
+BMI_mean29
+BMI_variances29
+
+
+hist(BMI_0_1_1_0_0$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_0_1_0_1_0 = data.frame(HD[HD$Combined == '0_1_0_1_0',])
+
+BMI_0_1_0_1_0
+
+
+BMI_mean30 = mean(BMI_0_1_0_1_0$BMI)
+BMI_variances30 = var(BMI_0_1_0_1_0$BMI)
+BMI_mean30
+BMI_variances30
+
+
+hist(BMI_0_1_0_1_0$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_1_1_0_1_1 = data.frame(HD[HD$Combined == '1_1_0_1_1',])
+
+BMI_1_1_0_1_1
+
+
+BMI_mean31 = mean(BMI_1_1_0_1_1$BMI)
+BMI_variances31 = var(BMI_1_1_0_1_1$BMI)
+BMI_mean31
+BMI_variances31
+
+
+hist(BMI_1_1_0_1_1$BMI)
+```
+
+```{r, echo = FALSE}
+
+BMI_0_1_1_0_1 = data.frame(HD[HD$Combined == '0_1_1_0_1',])
+
+BMI_0_1_1_0_1
+
+
+BMI_mean32 = mean(BMI_0_1_1_0_1$BMI)
+BMI_variances32 = var(BMI_0_1_1_0_1$BMI)
+BMI_mean32
+BMI_variances32
+
+
+hist(BMI_0_1_1_0_1$BMI)
+```
+
+
+
+
+
+
+
+```{r, echo = FALSE}
+HD$HeartDiseaseorAttack=as.factor(HD$HeartDiseaseorAttack)
+
+xtabs(~HeartDiseaseorAttack, data = HD)
+xtabs(~HeartDiseaseorAttack + BMI, data = HD)
+
+library(ggplot2)
+ggplot(data=HD, aes(x=BMI,fill = HeartDiseaseorAttack)) + 
+  geom_histogram(bins=20,position='stack')+ 
+  labs(x ='BMI', title ='Histogram of BMI vs HeartDiseaseorAttack') 
+```
+
+
+```{r, echo = FALSE}
+HD$HighBP=as.factor(HD$HighBP)
+
+xtabs(~HighBP, data = HD)
+xtabs(~HighBP + BMI, data = HD)
+
+library(ggplot2)
+ggplot(data=HD, aes(x=BMI,fill = HighBP)) + 
+  geom_histogram(bins=20,position='stack')+ 
+  labs(x ='BMI', title ='Histogram of BMI vs High Blood Pressure') 
+```
+
+
+
+```{r, echo = FALSE}
+HD$HighChol=as.factor(HD$HighChol)
+
+xtabs(~HighChol, data = HD)
+xtabs(~HighChol + BMI, data = HD)
+
+library(ggplot2)
+ggplot(data=HD, aes(x=BMI,fill = HighChol)) + 
+  geom_histogram(bins=20,position='stack')+ 
+  labs(x ='BMI', title ='Histogram of BMI vs High Cholesterol') 
+```
+
+```{r, echo = FALSE}
+HD$Smoker=as.factor(HD$Smoker)
+
+xtabs(~Smoker, data = HD)
+xtabs(~Smoker + BMI, data = HD)
+
+library(ggplot2)
+ggplot(data=HD, aes(x=BMI,fill = Smoker)) + 
+  geom_histogram(bins=20,position='stack')+ 
+  labs(x ='BMI', title ='Histogram of BMI vs Smoker') 
+```
+
+
+
+```{r, echo = FALSE}
+HD$Stroke=as.factor(HD$Stroke)
+
+xtabs(~Stroke, data = HD)
+xtabs(~Stroke + BMI, data = HD)
+
+library(ggplot2)
+ggplot(data=HD, aes(x=BMI,fill = Stroke)) + 
+  geom_histogram(bins=20,position='stack')+ 
+  labs(x ='BMI', title ='Histogram of BMI vs Stroke') 
+```
+```{r, echo = FALSE}
+HD$Combined=as.factor(HD$Combined)
+
+xtabs(~Combined, data = HD)
+xtabs(~Combined + BMI, data = HD)
+
+library(ggplot2)
+ggplot(data=HD, aes(x=BMI,fill = Combined)) + 
+  geom_histogram(bins=20,position='stack')+ 
+  labs(x ='BMI', title ='Histogram of BMI vs Combined') 
+```
+
+- Since all the histograms are not bell-shaped, we prove that it is not normally distributed. Therefore, we conclude that the Normality assumption is violated.
+
+### Perform the one-way ANOVA and Tukey-Kramer’s simultaneous pairwise comparison as if all Normality and equal-variance assumptions hold. 
+
+```{r, echo = FALSE}
+# Get the ANOVA
+fit_1=aov(BMI~HeartDiseaseorAttack,data=HD)
+anova(fit_1)
+fit_2=aov(BMI~HighBP,data=HD)
+anova(fit_2)
+fit_3=aov(BMI~HighChol,data=HD)
+anova(fit_3)
+fit_4=aov(BMI~Stroke,data=HD)
+anova(fit_4)
+fit_5=aov(BMI~Smoker,data=HD)
+anova(fit_5)
+fit_6=aov(BMI~Combined,data=HD)
+anova(fit_6)
+```
+```{r, echo = FALSE}
+# Get the Tukey
+tukey_1=TukeyHSD(fit_1, conf.level=.95)
+tukey_1
+
+tukey_2=TukeyHSD(fit_2, conf.level=.95)
+tukey_2
+
+tukey_3=TukeyHSD(fit_3, conf.level=.95)
+tukey_3
+
+tukey_4=TukeyHSD(fit_4, conf.level=.95)
+tukey_4
+
+tukey_5=TukeyHSD(fit_5, conf.level=.95)
+tukey_5
+
+tukey_6=TukeyHSD(fit_6, conf.level=.95)
+tukey_6
+```
+
+```{r, echo = FALSE}
+# plot the tukey
+plot(tukey_1)
+plot(tukey_2)
+plot(tukey_3)
+plot(tukey_4)
+plot(tukey_5)
+```
+
+
+### Check whether the equal variance assumption is violated? That is, members of {(σ_1)^2 ,(σ_2)^2 ,..,(σ_K)^2 } are not all equal.
+
+- We find the maximum and minimum of the whole list of variances in order to see if the equal variance assumption is violated
+```{r, echo = FALSE}
+total_variances = list(BMI_variances1,BMI_variances2,BMI_variances3,BMI_variances4,BMI_variances5,BMI_variances6,BMI_variances7,BMI_variances8,BMI_variances9,BMI_variances10,BMI_variances11,BMI_variances12,BMI_variances13,BMI_variances14,BMI_variances15,BMI_variances16,BMI_variances17,BMI_variances18,BMI_variances19,BMI_variances20,BMI_variances21,BMI_variances22,BMI_variances23,BMI_variances24,BMI_variances25,BMI_variances26,BMI_variances27,BMI_variances28,BMI_variances29,BMI_variances30,BMI_variances31,BMI_variances32)
+total_variances
+```
+- If the result of the maximum of the squared variance divided by the minimum of the squared variance is around 1, then the variances are all equal.
+```{r, echo = FALSE}
+x <- BMI_variances12
+y <- BMI_variances27
+z = (x^2)/(y^2)
+z
+```
+- Since the result is greater than 1, we conclude that the equal variance assumption is violated.
+
+### Construct HC-tree to discover the community structures among the K samples?
+
+- Constructing HC-tree for 32 means:
+
+```{r, echo = FALSE}
+
+total_mean = list(BMI_mean1,BMI_mean2,BMI_mean3,BMI_mean4,BMI_mean5,BMI_mean6,BMI_mean7,BMI_mean8,BMI_mean9,BMI_mean10,BMI_mean11,BMI_mean12,BMI_mean13,BMI_mean14,BMI_mean15,BMI_mean16,BMI_mean17,BMI_mean18,BMI_mean19,BMI_mean20,BMI_mean21,BMI_mean22,BMI_mean23,BMI_mean24,BMI_mean25,BMI_mean26,BMI_mean27,BMI_mean28,BMI_mean29,BMI_mean30,BMI_mean31,BMI_mean32)
+
+clusters <- hclust(dist(total_mean))
+plot(clusters,xlab='',main='Dendrogram')
+
+# cut off the tree at the desired number of clusters using cutree.
+clusterCut <- cutree(clusters, 5)
+# plot the tree
+rect.hclust(clusters, k=5)
+```
+
+
+- Based on the result of each tree, we can see that in each cluster, there are chunks that contain leafs similar to one another. However, only one of the clusters has one chunk that contains one leaf which means that it is substantially different from the rest of the remaining leafs. This tells us that the distribution of this leaf is significantly different from the distribution of the remaining.
+
+
+### Compare results from ANOVA and and Tukey-Kramer’s comparison with results found in HC-tree.
+
+- It is stated that the null hypothesis in the ANOVA is that there is no difference among the group mean, and the alternative hypothesis is that the means are not all similar to one another. Based on the results from the ANOVA and Tukey-Kramer, we can see that the p-values of all the samples are less than the significance level of 0.05, which indicates that we reject the null hypothesis. Therefore, there are significance differences in the means.
+
+- Based on the results from the HC tree, we can see that the clusters among the K samples (which we are doing 5) show that there are chunks (which represents the mean) in each cluster similar to one another than the other chunks. However, there is one chunk which separates from the rest as it only contains one leaf. This indicates that the distribution of this chunk is significantly different from the rest. However, the majority of the leafs are not the same, but close to one another.
+
+- In conclusion, the results of the ANOVA and Tukey show that there is significant difference in the group mean. In the HC tree, we can see that results that there are no similarity in the leafs.
+### Code Appendix
+```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE}
+
+```
+
+
