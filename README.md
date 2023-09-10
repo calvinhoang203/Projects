@@ -1,2 +1,2 @@
-# Projects
-Analyzing Heart Disease in Relation to General Health Variables
+# Analyzing Heart Disease in Relation to General Health Variables
+
