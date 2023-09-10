@@ -1,0 +1,787 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+```{r, echo = FALSE}
+heart_disease <- read.csv("C:/Users/hoang/Downloads/STA 106/heart_disease_health_indicators_BRFSS2015.csv", header = TRUE)
+```
+
+
+```{r, echo = FALSE}
+GenHealth_4 = heart_disease[heart_disease$GenHlth==4,]
+```
+
+### 4/ Investigating the 3-way interacting effects in GenHealth_4 sub-dataset:
+
+### Creating contigency tables based on the combination of these three selected binary variable
+```{r, echo = FALSE}
+# combine several binary HeartDiseaseorAttack, HighBP, HighChol
+# into one categorical variable
+
+# as.factor(): covert to factor variable
+GenHealth_4$HeartDiseaseorAttack=as.factor(GenHealth_4$HeartDiseaseorAttack)
+GenHealth_4$HighBP=as.factor(GenHealth_4$HighBP)
+GenHealth_4$HighChol=as.factor(GenHealth_4$HighChol)
+
+# Combine specified categorical variables by 
+# concatenating their values into one character
+# function combineCatVars(.data,vars,sep = ".")
+# .data:    a dataframe with the columns to be combined
+#  vars: a character vector of the categorical variables to be combined
+#  sep: the separator to combine the values of the variables in var 
+library(iNZightTools)
+Combined_1 = combineCatVars(GenHealth_4, vars = c('HeartDiseaseorAttack', 'HighBP', 'HighChol'), sep = "_")
+colnames(Combined_1)[23]  <- "Combination_1"
+```
+```{r, echo = FALSE}
+# function Build_contigencytable(data,group,variable,bins=10,proportion=FALSE)
+Build_contigencytable=function(data,group,variable,bins=10,proportion=FALSE){
+  table1=NULL
+  # create break points for the following histograms
+  # from minimum to maximum with equal distance
+  ax=seq(min(data[,variable]),max(data[,variable]),length.out=bins+1)
+  # Save histogram data
+  list_group=unique(data[,group])
+  for(i in list_group){
+    hg1=hist(data[data[,group]==i,variable], breaks = ax,plot = FALSE)
+    table1=rbind(table1,hg1$counts)
+  }
+  rownames(table1)=list_group
+  colnames(table1)=1:ncol(table1)
+  # calculate row sum and combine it  with the current table
+  table1=cbind(table1, 'Total'=apply(table1,1,sum))
+  # calculate column sum and combine it  with the current table
+  table1=rbind(table1, 'Total'=apply(table1,2,sum))
+
+  if(proportion){
+    # convert to proportions
+    n_col=ncol(table1)
+    for(i in 1:nrow(table1)){
+      table1[i,]=table1[i,]/table1[i,n_col]
+    }
+  }
+  table1
+}
+
+# build proportion contigency table for the histogram of BMI with group factor combination
+# logical value T=TRUE F=FALSE
+table_1=Build_contigencytable(Combined_1,"Combination_1","BMI",10,TRUE)
+
+# discard the last column all are ones.
+# 1:(ncol(df)-1): a consecutive vector of 1,2,.,. ncol(df)-1
+# ncol(table_1): return the number of columns of df
+table_1=table_1[,1:(ncol(table_1)-1)]
+table_1
+```
+
+
+```{r, echo = FALSE}
+# combine several binary HeartDiseaseorAttack, HighBP
+# into one categorical variable
+
+# as.factor(): covert to factor variable
+GenHealth_4$HeartDiseaseorAttack=as.factor(GenHealth_4$HeartDiseaseorAttack)
+GenHealth_4$HighBP=as.factor(GenHealth_4$HighBP)
+
+# Combine specified categorical variables by 
+# concatenating their values into one character
+# function combineCatVars(.data,vars,sep = ".")
+# .data:    a dataframe with the columns to be combined
+#  vars: a character vector of the categorical variables to be combined
+#  sep: the separator to combine the values of the variables in var 
+library(iNZightTools)
+Combined_2 = combineCatVars(GenHealth_4, vars = c('HeartDiseaseorAttack', 'HighBP'), sep = "_")
+colnames(Combined_2)[23]  <- "Combination_2"
+```
+```{r, echo = FALSE}
+# function Build_contigencytable(data,group,variable,bins=10,proportion=FALSE)
+Build_contigencytable=function(data,group,variable,bins=10,proportion=FALSE){
+  table2=NULL
+  # create break points for the following histograms
+  # from minimum to maximum with equal distance
+  ax=seq(min(data[,variable]),max(data[,variable]),length.out=bins+1)
+  # Save histogram data
+  list_group=unique(data[,group])
+  for(i in list_group){
+    hg2=hist(data[data[,group]==i,variable], breaks = ax,plot = FALSE)
+    table2=rbind(table2,hg2$counts)
+  }
+  rownames(table2)=list_group
+  colnames(table2)=1:ncol(table2)
+  # calculate row sum and combine it  with the current table
+  table2=cbind(table2, 'Total'=apply(table2,1,sum))
+  # calculate column sum and combine it  with the current table
+  table2=rbind(table2, 'Total'=apply(table2,2,sum))
+
+  if(proportion){
+    # convert to proportions
+    n_col=ncol(table2)
+    for(i in 1:nrow(table2)){
+      table2[i,]=table2[i,]/table2[i,n_col]
+    }
+  }
+  table2
+}
+
+# build proportion contigency table for the histogram of BMI with group factor combination
+# logical value T=TRUE F=FALSE
+table_2=Build_contigencytable(Combined_2,"Combination_2","BMI",10,TRUE)
+
+# discard the last column all are ones.
+# 1:(ncol(df)-1): a consecutive vector of 1,2,.,. ncol(df)-1
+# ncol(table_1): return the number of columns of df
+table_2=table_2[,1:(ncol(table_2)-1)]
+table_2
+```
+
+```{r, echo = FALSE}
+# combine several binary HeartDiseaseorAttack, HighChol
+# into one categorical variable
+
+# as.factor(): covert to factor variable
+GenHealth_4$HeartDiseaseorAttack=as.factor(GenHealth_4$HeartDiseaseorAttack)
+GenHealth_4$HighChol=as.factor(GenHealth_4$HighChol)
+
+# Combine specified categorical variables by 
+# concatenating their values into one character
+# function combineCatVars(.data,vars,sep = ".")
+# .data:    a dataframe with the columns to be combined
+#  vars: a character vector of the categorical variables to be combined
+#  sep: the separator to combine the values of the variables in var 
+library(iNZightTools)
+Combined_3 = combineCatVars(GenHealth_4, vars = c('HeartDiseaseorAttack', 'HighChol'), sep = "_")
+colnames(Combined_3)[23]  <- "Combination_3"
+```
+```{r, echo = FALSE}
+# function Build_contigencytable(data,group,variable,bins=10,proportion=FALSE)
+Build_contigencytable=function(data,group,variable,bins=10,proportion=FALSE){
+  table3=NULL
+  # create break points for the following histograms
+  # from minimum to maximum with equal distance
+  ax=seq(min(data[,variable]),max(data[,variable]),length.out=bins+1)
+  # Save histogram data
+  list_group=unique(data[,group])
+  for(i in list_group){
+    hg3=hist(data[data[,group]==i,variable], breaks = ax,plot = FALSE)
+    table3=rbind(table3,hg3$counts)
+  }
+  rownames(table3)=list_group
+  colnames(table3)=1:ncol(table3)
+  # calculate row sum and combine it  with the current table
+  table3=cbind(table3, 'Total'=apply(table3,1,sum))
+  # calculate column sum and combine it  with the current table
+  table3=rbind(table3, 'Total'=apply(table3,2,sum))
+
+  if(proportion){
+    # convert to proportions
+    n_col=ncol(table3)
+    for(i in 1:nrow(table3)){
+      table3[i,]=table3[i,]/table3[i,n_col]
+    }
+  }
+  table3
+}
+
+# build proportion contigency table for the histogram of BMI with group factor combination
+# logical value T=TRUE F=FALSE
+table_3=Build_contigencytable(Combined_3,"Combination_3","BMI",10,TRUE)
+
+# discard the last column all are ones.
+# 1:(ncol(df)-1): a consecutive vector of 1,2,.,. ncol(df)-1
+# ncol(table_1): return the number of columns of df
+table_3=table_3[,1:(ncol(table_3)-1)]
+table_3
+```
+```{r, echo = FALSE}
+# combine several binary HighBP, HighChol
+# into one categorical variable
+
+# as.factor(): covert to factor variable
+
+GenHealth_4$HighBP=as.factor(GenHealth_4$HighBP)
+GenHealth_4$HighChol=as.factor(GenHealth_4$HighChol)
+
+# Combine specified categorical variables by 
+# concatenating their values into one character
+# function combineCatVars(.data,vars,sep = ".")
+# .data:    a dataframe with the columns to be combined
+#  vars: a character vector of the categorical variables to be combined
+#  sep: the separator to combine the values of the variables in var 
+library(iNZightTools)
+Combined_4 = combineCatVars(GenHealth_4, vars = c('HighBP', 'HighChol'), sep = "_")
+colnames(Combined_4)[23]  <- "Combination_4"
+```
+```{r, echo = FALSE}
+# function Build_contigencytable(data,group,variable,bins=10,proportion=FALSE)
+Build_contigencytable=function(data,group,variable,bins=10,proportion=FALSE){
+  table4=NULL
+  # create break points for the following histograms
+  # from minimum to maximum with equal distance
+  ax=seq(min(data[,variable]),max(data[,variable]),length.out=bins+1)
+  # Save histogram data
+  list_group=unique(data[,group])
+  for(i in list_group){
+    hg4=hist(data[data[,group]==i,variable], breaks = ax,plot = FALSE)
+    table4=rbind(table4,hg4$counts)
+  }
+  rownames(table4)=list_group
+  colnames(table4)=1:ncol(table4)
+  # calculate row sum and combine it  with the current table
+  table4=cbind(table4, 'Total'=apply(table4,1,sum))
+  # calculate column sum and combine it  with the current table
+  table4=rbind(table4, 'Total'=apply(table4,2,sum))
+
+  if(proportion){
+    # convert to proportions
+    n_col=ncol(table4)
+    for(i in 1:nrow(table4)){
+      table4[i,]=table4[i,]/table4[i,n_col]
+    }
+  }
+  table4
+}
+
+# build proportion contigency table for the histogram of BMI with group factor combination
+# logical value T=TRUE F=FALSE
+table_4=Build_contigencytable(Combined_4,"Combination_4","BMI",10,TRUE)
+
+# discard the last column all are ones.
+# 1:(ncol(df)-1): a consecutive vector of 1,2,.,. ncol(df)-1
+# ncol(table_1): return the number of columns of df
+table_4=table_4[,1:(ncol(table_4)-1)]
+table_4
+```
+
+
+### 3-way HC-tree of GenHealth_4:
+```{r, echo = FALSE}
+table_1 <- head(table_1, -1)
+clusters <- hclust(dist(table_1))
+plot(clusters,xlab='',main='Dendrogram')
+
+# cut off the tree at the desired number of clusters using cutree.
+clusterCut <- cutree(clusters, 3)
+# plot the tree
+rect.hclust(clusters, k=3)
+```
+
+### Comparing the entropies of categorical variables to see the effects
+
+
+
+### No HD _ Yes HighBP _ No HighChol
+
+```{r, echo = FALSE}
+# load package DescTools
+library(DescTools)
+```
+
+```{r, echo = FALSE}
+# Entropy(x,base): calculate Shannon entropy
+# x: contingency table
+# base: base of the logarithm to be used, defaults to 2.
+
+# generate 1000 random samples from multinomial distribution
+sample1=rmultinom(1000,100,table_1[5,])
+sample2=rmultinom(1000,100,table_2[1,])
+sample3=rmultinom(1000,100,table_3[3,])
+sample4=rmultinom(1000,100,table_4[4,])
+
+A=ncol(sample1)
+B=ncol(sample2)
+C=ncol(sample3)
+D=ncol(sample4)
+
+# initialize a vector to save all entropies.
+entropy_1=numeric(A)
+entropy_2=numeric(B)
+entropy_3=numeric(C)
+entropy_4=numeric(D)
+for(i in 1:A){
+  entropy_1[i]=Entropy(sample1[,i],base=exp(1))
+}
+for(i in 1:B){
+  entropy_2[i]=Entropy(sample2[,i],base=exp(1))
+}
+for(i in 1:C){
+  entropy_3[i]=Entropy(sample3[,i],base=exp(1))
+}
+for(i in 1:D){
+  entropy_4[i]=Entropy(sample4[,i],base=exp(1))
+}
+par(mfrow=c(2,2))
+hist(entropy_1,main='0_1_0',xlab='Entropy')
+hist(entropy_2,main='0_1_+',xlab='Entropy')
+hist(entropy_3,main='0_+_0',xlab='Entropy')
+hist(entropy_4,main='+_1_0',xlab='Entropy')
+```
+
+Looking at these graphs below, it seems that there isn't much shift happening in the two data. There is a small shift to the left when missing HighChol. Thus, missing 1 bi-variable has little effect on 0_1_0. Since the graphs mostly overlap the origin, there is no interaction effect on the BMI distribution.
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='0_1_0 vs 0_1_+', xlab='Entropy')
+hist(entropy_2, col='red', add=TRUE)
+legend('topright', c('Entropy of 0_1_0', 'Entropy of 0_1_+'), fill=c('gray', 'red'))
+```
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='0_1_0 vs 0_+_0', xlab='Entropy')
+hist(entropy_3, col='red', add=TRUE)
+legend('topright', c('Entropy of 0_1_0', 'Entropy of 0_+_0'), fill=c('gray', 'red'))
+```
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='0_1_0 vs +_1_0', xlab='Entropy')
+hist(entropy_4, col='red', add=TRUE)
+legend('topright', c('Entropy of 0_1_0', 'Entropy of +_1_0'), fill=c('gray', 'red'))
+```
+
+### No HD _ No HighBP _ Yes HighChol
+
+```{r, echo = FALSE}
+# Entropy(x,base): calculate Shannon entropy
+# x: contingency table
+# base: base of the logarithm to be used, defaults to 2.
+
+# generate 1000 random samples from multinomial distribution
+sample1=rmultinom(1000,100,table_1[2,])
+sample2=rmultinom(1000,100,table_2[2,])
+sample3=rmultinom(1000,100,table_3[1,])
+sample4=rmultinom(1000,100,table_4[2,])
+
+A=ncol(sample1)
+B=ncol(sample2)
+C=ncol(sample3)
+D=ncol(sample4)
+
+# initialize a vector to save all entropies.
+entropy_1=numeric(A)
+entropy_2=numeric(B)
+entropy_3=numeric(C)
+entropy_4=numeric(D)
+for(i in 1:A){
+  entropy_1[i]=Entropy(sample1[,i],base=exp(1))
+}
+for(i in 1:B){
+  entropy_2[i]=Entropy(sample2[,i],base=exp(1))
+}
+for(i in 1:C){
+  entropy_3[i]=Entropy(sample3[,i],base=exp(1))
+}
+for(i in 1:D){
+  entropy_4[i]=Entropy(sample4[,i],base=exp(1))
+}
+par(mfrow=c(2,2))
+hist(entropy_1,main='0_0_1',xlab='Entropy')
+hist(entropy_2,main='0_0_+',xlab='Entropy')
+hist(entropy_3,main='0_+_1',xlab='Entropy')
+hist(entropy_4,main='+_0_1',xlab='Entropy')
+```
+
+Looking at these graphs below, there is clearly a shift to the right when HighBP or HighChol is missing, which means the entropy level goes up and makes it less accurate. However, missing HD doesn't change much. Since the graphs mostly doesn't overlap the origin, there is an interaction effect on the BMI distribution.
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='0_0_1 vs 0_0_+', xlab='Entropy')
+hist(entropy_2, col='red', add=TRUE)
+legend('topright', c('Entropy of 0_0_1', 'Entropy of 0_0_+'), fill=c('gray', 'red'))
+```
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='0_0_1 vs 0_+_1', xlab='Entropy')
+hist(entropy_3, col='red', add=TRUE)
+legend('topright', c('Entropy of 0_0_1', 'Entropy of 0_+_1'), fill=c('gray', 'red'))
+```
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='0_0_1 vs +_0_1', xlab='Entropy')
+hist(entropy_4, col='red', add=TRUE)
+legend('topright', c('Entropy of 0_0_1', 'Entropy of +_0_1'), fill=c('gray', 'red'))
+```
+
+
+
+### No HD _ No HighBP _ No HighChol
+
+```{r, echo = FALSE}
+# Entropy(x,base): calculate Shannon entropy
+# x: contingency table
+# base: base of the logarithm to be used, defaults to 2.
+
+# generate 1000 random samples from multinomial distribution
+sample1=rmultinom(1000,100,table_1[4,])
+sample2=rmultinom(1000,100,table_2[2,])
+sample3=rmultinom(1000,100,table_3[3,])
+sample4=rmultinom(1000,100,table_4[3,])
+
+A=ncol(sample1)
+B=ncol(sample2)
+C=ncol(sample3)
+D=ncol(sample4)
+
+# initialize a vector to save all entropies.
+entropy_1=numeric(A)
+entropy_2=numeric(B)
+entropy_3=numeric(C)
+entropy_4=numeric(D)
+for(i in 1:A){
+  entropy_1[i]=Entropy(sample1[,i],base=exp(1))
+}
+for(i in 1:B){
+  entropy_2[i]=Entropy(sample2[,i],base=exp(1))
+}
+for(i in 1:C){
+  entropy_3[i]=Entropy(sample3[,i],base=exp(1))
+}
+for(i in 1:D){
+  entropy_4[i]=Entropy(sample4[,i],base=exp(1))
+}
+par(mfrow=c(2,2))
+hist(entropy_1,main='0_0_0',xlab='Entropy')
+hist(entropy_2,main='0_0_+',xlab='Entropy')
+hist(entropy_3,main='0_+_0',xlab='Entropy')
+hist(entropy_4,main='+_0_0',xlab='Entropy')
+```
+
+Looking at these graphs below, there is not much change happening. There is a small shift to the right when missing HighBP, but not much. Since the graphs mostly overlap to the origin, there is no interaction effect on the BMI distribution.
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='0_0_0 vs 0_0_+', xlab='Entropy')
+hist(entropy_2, col='red', add=TRUE)
+legend('topright', c('Entropy of 0_0_0', 'Entropy of 0_0_+'), fill=c('gray', 'red'))
+```
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='0_0_0 vs 0_+_0', xlab='Entropy')
+hist(entropy_3, col='red', add=TRUE)
+legend('topright', c('Entropy of 0_0_0', 'Entropy of 0_+_0'), fill=c('gray', 'red'))
+```
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='0_0_0 vs +_0_0', xlab='Entropy')
+hist(entropy_4, col='red', add=TRUE)
+legend('topright', c('Entropy of 0_0_0', 'Entropy of +_0_0'), fill=c('gray', 'red'))
+```
+
+
+### Yes HD _ Yes HighBP _ Yes HighChol
+
+```{r, echo = FALSE}
+# Entropy(x,base): calculate Shannon entropy
+# x: contingency table
+# base: base of the logarithm to be used, defaults to 2.
+
+# generate 1000 random samples from multinomial distribution
+sample1=rmultinom(1000,100,table_1[3,])
+sample2=rmultinom(1000,100,table_2[3,])
+sample3=rmultinom(1000,100,table_3[2,])
+sample4=rmultinom(1000,100,table_4[1,])
+
+A=ncol(sample1)
+B=ncol(sample2)
+C=ncol(sample3)
+D=ncol(sample4)
+
+# initialize a vector to save all entropies.
+entropy_1=numeric(A)
+entropy_2=numeric(B)
+entropy_3=numeric(C)
+entropy_4=numeric(D)
+for(i in 1:A){
+  entropy_1[i]=Entropy(sample1[,i],base=exp(1))
+}
+for(i in 1:B){
+  entropy_2[i]=Entropy(sample2[,i],base=exp(1))
+}
+for(i in 1:C){
+  entropy_3[i]=Entropy(sample3[,i],base=exp(1))
+}
+for(i in 1:D){
+  entropy_4[i]=Entropy(sample4[,i],base=exp(1))
+}
+par(mfrow=c(2,2))
+hist(entropy_1,main='1_1_1',xlab='Entropy')
+hist(entropy_2,main='1_1_+',xlab='Entropy')
+hist(entropy_3,main='1_+_1',xlab='Entropy')
+hist(entropy_4,main='+_1_1',xlab='Entropy')
+```
+
+Looking at these graphs below, there is not much shift happening. There is a small shift to the right when missing HeartDisease, but not much. Since the graphs mostly overlap the origin, there is no interaction effect on the BMI distribution.
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='1_1_1 vs 1_1_+', xlab='Entropy')
+hist(entropy_2, col='red', add=TRUE)
+legend('topright', c('Entropy of 1_1_1', 'Entropy of 1_1_+'), fill=c('gray', 'red'))
+```
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='1_1_1 vs 1_+_1', xlab='Entropy')
+hist(entropy_3, col='red', add=TRUE)
+legend('topright', c('Entropy of 1_1_1', 'Entropy of 1_+_1'), fill=c('gray', 'red'))
+```
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='1_1_1 vs +_1_1', xlab='Entropy')
+hist(entropy_4, col='red', add=TRUE)
+legend('topright', c('Entropy of 1_1_1', 'Entropy of +_1_1'), fill=c('gray', 'red'))
+```
+
+
+
+### Yes HD _ No HighBP _ Yes HighChol
+
+```{r, echo = FALSE}
+# Entropy(x,base): calculate Shannon entropy
+# x: contingency table
+# base: base of the logarithm to be used, defaults to 2.
+
+# generate 1000 random samples from multinomial distribution
+sample1=rmultinom(1000,100,table_1[6,])
+sample2=rmultinom(1000,100,table_2[4,])
+sample3=rmultinom(1000,100,table_3[2,])
+sample4=rmultinom(1000,100,table_4[2,])
+
+A=ncol(sample1)
+B=ncol(sample2)
+C=ncol(sample3)
+D=ncol(sample4)
+
+# initialize a vector to save all entropies.
+entropy_1=numeric(A)
+entropy_2=numeric(B)
+entropy_3=numeric(C)
+entropy_4=numeric(D)
+for(i in 1:A){
+  entropy_1[i]=Entropy(sample1[,i],base=exp(1))
+}
+for(i in 1:B){
+  entropy_2[i]=Entropy(sample2[,i],base=exp(1))
+}
+for(i in 1:C){
+  entropy_3[i]=Entropy(sample3[,i],base=exp(1))
+}
+for(i in 1:D){
+  entropy_4[i]=Entropy(sample4[,i],base=exp(1))
+}
+par(mfrow=c(2,2))
+hist(entropy_1,main='1_0_1',xlab='Entropy')
+hist(entropy_2,main='1_0_+',xlab='Entropy')
+hist(entropy_3,main='1_+_1',xlab='Entropy')
+hist(entropy_4,main='+_0_1',xlab='Entropy')
+```
+
+Looking at these graphs below, there is clearly a strong shift to the right when HighBP or HeartDisease or HighChol is missing, which means the entropy level goes up and makes it less accurate. Since all 3 graphs don't overlap the origin, there is an interaction effect on the BMI distribution.
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='1_0_1 vs 1_0_+', xlab='Entropy')
+hist(entropy_2, col='red', add=TRUE)
+legend('topright', c('Entropy of 1_0_1', 'Entropy of 1_0_+'), fill=c('gray', 'red'))
+```
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='1_0_1 vs 1_+_1', xlab='Entropy')
+hist(entropy_3, col='red', add=TRUE)
+legend('topright', c('Entropy of 1_0_1', 'Entropy of 1_+_1'), fill=c('gray', 'red'))
+```
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='1_0_1 vs +_0_1', xlab='Entropy')
+hist(entropy_4, col='red', add=TRUE)
+legend('topright', c('Entropy of 1_0_1', 'Entropy of +_0_1'), fill=c('gray', 'red'))
+```
+
+
+
+### Yes HD _ No HighBP _ No HighChol
+
+```{r, echo = FALSE}
+# Entropy(x,base): calculate Shannon entropy
+# x: contingency table
+# base: base of the logarithm to be used, defaults to 2.
+
+# generate 1000 random samples from multinomial distribution
+sample1=rmultinom(1000,100,table_1[7,])
+sample2=rmultinom(1000,100,table_2[4,])
+sample3=rmultinom(1000,100,table_3[4,])
+sample4=rmultinom(1000,100,table_4[3,])
+
+A=ncol(sample1)
+B=ncol(sample2)
+C=ncol(sample3)
+D=ncol(sample4)
+
+# initialize a vector to save all entropies.
+entropy_1=numeric(A)
+entropy_2=numeric(B)
+entropy_3=numeric(C)
+entropy_4=numeric(D)
+for(i in 1:A){
+  entropy_1[i]=Entropy(sample1[,i],base=exp(1))
+}
+for(i in 1:B){
+  entropy_2[i]=Entropy(sample2[,i],base=exp(1))
+}
+for(i in 1:C){
+  entropy_3[i]=Entropy(sample3[,i],base=exp(1))
+}
+for(i in 1:D){
+  entropy_4[i]=Entropy(sample4[,i],base=exp(1))
+}
+par(mfrow=c(2,2))
+hist(entropy_1,main='1_0_0',xlab='Entropy')
+hist(entropy_2,main='1_0_+',xlab='Entropy')
+hist(entropy_3,main='1_+_0',xlab='Entropy')
+hist(entropy_4,main='+_0_0',xlab='Entropy')
+```
+
+Looking at these graphs below, there is a clear shift to the right when missing HeartDisease or HighBP, which means the entropy level goes up, and makes it less accurate. However, there is not much change when missing HighChol. Since the graphs mostly don't overlap the origin, there is an interaction effect on the BMI distribution.
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='1_0_0 vs 1_0_+', xlab='Entropy')
+hist(entropy_2, col='red', add=TRUE)
+legend('topright', c('Entropy of 1_0_0', 'Entropy of 1_0_+'), fill=c('gray', 'red'))
+```
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='1_0_0 vs 1_+_0', xlab='Entropy')
+hist(entropy_3, col='red', add=TRUE)
+legend('topright', c('Entropy of 1_0_0', 'Entropy of 1_+_0'), fill=c('gray', 'red'))
+```
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='1_0_0 vs +_0_0', xlab='Entropy')
+hist(entropy_4, col='red', add=TRUE)
+legend('topright', c('Entropy of 1_0_0', 'Entropy of +_0_0'), fill=c('gray', 'red'))
+```
+
+
+
+
+
+### No HD _ Yes HighBP _ Yes HighChol
+
+```{r, echo = FALSE}
+# Entropy(x,base): calculate Shannon entropy
+# x: contingency table
+# base: base of the logarithm to be used, defaults to 2.
+
+# generate 1000 random samples from multinomial distribution
+sample1=rmultinom(1000,100,table_1[1,])
+sample2=rmultinom(1000,100,table_2[3,])
+sample3=rmultinom(1000,100,table_3[1,])
+sample4=rmultinom(1000,100,table_4[1,])
+
+A=ncol(sample1)
+B=ncol(sample2)
+C=ncol(sample3)
+D=ncol(sample4)
+
+# initialize a vector to save all entropies.
+entropy_1=numeric(A)
+entropy_2=numeric(B)
+entropy_3=numeric(C)
+entropy_4=numeric(D)
+for(i in 1:A){
+  entropy_1[i]=Entropy(sample1[,i],base=exp(1))
+}
+for(i in 1:B){
+  entropy_2[i]=Entropy(sample2[,i],base=exp(1))
+}
+for(i in 1:C){
+  entropy_3[i]=Entropy(sample3[,i],base=exp(1))
+}
+for(i in 1:D){
+  entropy_4[i]=Entropy(sample4[,i],base=exp(1))
+}
+par(mfrow=c(2,2))
+hist(entropy_1,main='0_1_1',xlab='Entropy')
+hist(entropy_2,main='0_1_+',xlab='Entropy')
+hist(entropy_3,main='0_+_1',xlab='Entropy')
+hist(entropy_4,main='+_1_1',xlab='Entropy')
+```
+
+Looking at these graphs below, there is not much change happening. There is a clear shift to the left which means the entropy level goes down, and makes it more accurate. Since the graphs mostly overlap the origin, there is no interaction effect on the BMI distribution. Thus, missing one bi-variable has little effect on 0_1_1.
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='0_1_1 vs 0_1_+', xlab='Entropy')
+hist(entropy_2, col='red', add=TRUE)
+legend('topright', c('Entropy of 0_1_1', 'Entropy of 0_1_+'), fill=c('gray', 'red'))
+```
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='0_1_1 vs 0_+_1', xlab='Entropy')
+hist(entropy_3, col='red', add=TRUE)
+legend('topright', c('Entropy of 0_1_1', 'Entropy of 0_+_1'), fill=c('gray', 'red'))
+```
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='0_1_1 vs +_1_1', xlab='Entropy')
+hist(entropy_4, col='red', add=TRUE)
+legend('topright', c('Entropy of 0_1_1', 'Entropy of +_1_1'), fill=c('gray', 'red'))
+```
+
+
+### Yes HD _ Yes HighBP _ No HighChol
+
+```{r, echo = FALSE}
+# Entropy(x,base): calculate Shannon entropy
+# x: contingency table
+# base: base of the logarithm to be used, defaults to 2.
+
+# generate 1000 random samples from multinomial distribution
+sample1=rmultinom(1000,100,table_1[8,])
+sample2=rmultinom(1000,100,table_2[3,])
+sample3=rmultinom(1000,100,table_3[4,])
+sample4=rmultinom(1000,100,table_4[4,])
+
+A=ncol(sample1)
+B=ncol(sample2)
+C=ncol(sample3)
+D=ncol(sample4)
+
+# initialize a vector to save all entropies.
+entropy_1=numeric(A)
+entropy_2=numeric(B)
+entropy_3=numeric(C)
+entropy_4=numeric(D)
+for(i in 1:A){
+  entropy_1[i]=Entropy(sample1[,i],base=exp(1))
+}
+for(i in 1:B){
+  entropy_2[i]=Entropy(sample2[,i],base=exp(1))
+}
+for(i in 1:C){
+  entropy_3[i]=Entropy(sample3[,i],base=exp(1))
+}
+for(i in 1:D){
+  entropy_4[i]=Entropy(sample4[,i],base=exp(1))
+}
+par(mfrow=c(2,2))
+hist(entropy_1,main='1_1_0',xlab='Entropy')
+hist(entropy_2,main='1_1_+',xlab='Entropy')
+hist(entropy_3,main='1_+_0',xlab='Entropy')
+hist(entropy_4,main='+_1_0',xlab='Entropy')
+```
+
+Looking at these graphs below, there is not much change happening when missing HighBP or HighChol. However, there is a clear shift to the right when missing HeartDisease, which means the entropy level goes up and makes it less accurate. Since the graphs mostly overlap the origin, there is no interaction effect on the BMI distribution. Thus, missing one bi-variable has little effect on 1_1_0.
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='1_1_0 vs 1_1_+', xlab='Entropy')
+hist(entropy_2, col='red', add=TRUE)
+legend('topright', c('Entropy of 1_1_0', 'Entropy of 1_1_+'), fill=c('gray', 'red'))
+```
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='1_1_0 vs 1_+_0', xlab='Entropy')
+hist(entropy_3, col='red', add=TRUE)
+legend('topright', c('Entropy of 1_1_0', 'Entropy of 1_+_0'), fill=c('gray', 'red'))
+```
+
+```{r, echo = FALSE}
+hist(entropy_1, col='gray', xlim = c(0, 2), ylim = c(0,250), main='1_1_0 vs +_1_0', xlab='Entropy')
+hist(entropy_4, col='red', add=TRUE)
+legend('topright', c('Entropy of 1_1_0', 'Entropy of +_1_0'), fill=c('gray', 'red'))
+```
+
